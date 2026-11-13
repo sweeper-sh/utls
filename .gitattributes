@@ -1,0 +1,2 @@
+# The git hooks are bash scripts: a CRLF after the shebang breaks them on every platform.
+.githooks/* text eol=lf
