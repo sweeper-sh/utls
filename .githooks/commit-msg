@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# commit-msg gate: no commit credits a coding agent.
+# Install once per clone:  git config core.hooksPath .githooks
+#
+# Fails on a Co-Authored-By trailer naming an agent, or a "Generated with" line. A human
+# co-author is fine. For agents the same rule is checked earlier by
+# .claude/hooks/guard-command.ps1; keep the word lists the same.
+set -euo pipefail
+
+msg_file="$1"
+
+if grep -iE '^[[:space:]]*co-authored-by:.*(\b(claude|codex|copilot|aider)\b|@anthropic\.com|@openai\.com|@cursor\.(com|sh)|\[bot\])' "$msg_file" >/dev/null \
+   || grep -iE 'generated with\b.*\b(claude|codex)\b' "$msg_file" >/dev/null; then
+  echo "commit-msg: this message credits a coding agent:"
+  grep -inE 'co-authored-by:|generated with' "$msg_file" | sed 's/^/  /'
+  echo "Remove that line. Commits here carry no agent attribution; a human co-author is fine."
+  exit 1
+fi
